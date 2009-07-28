@@ -70,7 +70,7 @@ namespace RpmRepoClone
                 repositories.Add (new Uri (uri, UriKind.Absolute));
             }
             
-            if (show_help) {
+            if (show_help || args.Length == 0) {
                 Console.Error.WriteLine ("Usage: rpm-repo-clone OPTIONS+ <repository> [<repositories>]");
                 Console.Error.WriteLine ();
                 Console.Error.WriteLine ("Options:");
