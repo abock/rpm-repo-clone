@@ -15,10 +15,11 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\bin</OutputPath>
-    <DefineConstants>DEBUG</DefineConstants>
+    <DefineConstants>DEBUG,LINQ</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
+    <Commandlineparameters>http://dist.suse.de/ibs/Devel://Moblin://Factory/SUSE_SLE-11_GA/</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -38,6 +39,7 @@
     <Compile Include="Banshee.IO\StreamExtensions.cs" />
     <Compile Include="RpmRepoClone\RpmMetadataDocument.cs" />
     <Compile Include="RpmRepoClone\Package.cs" />
+    <Compile Include="Mono.Options\Options.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
