@@ -196,9 +196,7 @@ namespace RpmRepoClone
         private static void CreateRepodata ()
         {
             Console.WriteLine ("Creating repodata...");
-            Directory.CreateDirectory ("repodata");
-            var proc = Process.Start (new ProcessStartInfo (
-                "createrepo", String.Format ("-o . -p .")));
+            var proc = Process.Start ("createrepo -p .");
             proc.Start ();
             proc.WaitForExit ();
         }
