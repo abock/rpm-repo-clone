@@ -55,10 +55,12 @@ namespace RpmRepoClone
         {
             bool show_help = false;
             string alternate_pwd = null;
+            bool create_pwd = false;
             
             var options = new OptionSet () {
                 { "a|arch=", "add an architecture (default is i586)", v => architectures.Add (v) },
                 { "d|dir=", "use an alternative working/output directory", v => alternate_pwd = v },
+                { "m|mkpwd", "create the alternative working/output directory if it does not exist", v => create_pwd = v != null },
                 { "c|createrepo", "run createrepo when finished", v => create_repo = v != null },
                 { "s|sync=", "run ssh rsync when finished", v => ssh_rsync_destination = v },
                 { "h|help", "show this message and exit", v => show_help = v != null }
@@ -78,7 +80,11 @@ namespace RpmRepoClone
             
             if (alternate_pwd != null) {
                 if (!Directory.Exists (alternate_pwd)) {
-                    throw new DirectoryNotFoundException ("Invalid working directory: " + alternate_pwd);
+                    if (create_pwd) {
+                        Directory.CreateDirectory (alternate_pwd);
+                    } else {
+                        throw new DirectoryNotFoundException ("Invalid working directory: " + alternate_pwd);
+                    }
                 }
                 
                 Environment.CurrentDirectory = alternate_pwd;
