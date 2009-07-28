@@ -1,2 +1,4 @@
 bin/
+repos/
 *.user*
+*.pidb
