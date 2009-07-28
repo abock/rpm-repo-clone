@@ -71,7 +71,10 @@ namespace RpmRepoClone
             }
             
             if (show_help || args.Length == 0) {
-                Console.Error.WriteLine ("Usage: rpm-repo-clone OPTIONS+ <repository> [<repositories>]");
+                Console.Error.WriteLine ("Usage: rpm-repo-clone [OPTIONS+] <repository> [<repositories>]");
+                Console.Error.WriteLine ();
+                Console.Error.WriteLine ("Copyright 2009 Novell, Inc. Written by Aaron Bockover.");
+                Console.Error.WriteLine ("Distributed under the MIT/X11 license.");
                 Console.Error.WriteLine ();
                 Console.Error.WriteLine ("Options:");
                 options.WriteOptionDescriptions (Console.Error);
