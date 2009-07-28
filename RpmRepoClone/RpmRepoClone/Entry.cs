@@ -38,6 +38,10 @@ namespace RpmRepoClone
             if (create_repo) {
                 CreateRepodata ();
             }
+
+            if (ssh_rsync_destination != null) {
+                Rsync ();
+            }
             
             Console.WriteLine ("Done.");
         }
@@ -120,7 +124,10 @@ namespace RpmRepoClone
                     where remote.Arch == arch
                     select remote;
                     
-                var files_to_remove = new List<string> (Directory.GetFiles (arch));
+                var files_to_remove = new List<string> ();
+                if (Directory.Exists (arch)) {
+                    files_to_remove.AddRange (Directory.GetFiles (arch));
+                }
                 
                 foreach (var remote_package in query) {
                     var file = new FileInfo (remote_package.RelativeLocation);
@@ -196,7 +203,16 @@ namespace RpmRepoClone
         private static void CreateRepodata ()
         {
             Console.WriteLine ("Creating repodata...");
-            var proc = Process.Start ("createrepo -p .");
+            var proc = Process.Start ("createrepo", "-p .");
+            proc.Start ();
+            proc.WaitForExit ();
+        }
+
+        private static void Rsync ()
+        {
+            Console.WriteLine ("Rsyncing repository...");
+            var proc = Process.Start ("rsync", "-avz -e ssh . " + 
+                ssh_rsync_destination);
             proc.Start ();
             proc.WaitForExit ();
         }
