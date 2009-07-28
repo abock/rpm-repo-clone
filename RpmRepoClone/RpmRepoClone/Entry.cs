@@ -218,10 +218,21 @@ namespace RpmRepoClone
         private static void Rsync ()
         {
             Console.WriteLine ("Rsyncing repository...");
-            var proc = Process.Start ("rsync", "-avz -e ssh . " + 
-                ssh_rsync_destination);
-            proc.Start ();
-            proc.WaitForExit ();
+            
+            var ssh_parts = ssh_rsync_destination.Split (new char [] { ':' }, 2);
+            var ssh_login = ssh_parts[0];
+            var ssh_target_path = ssh_parts[1];
+        
+            var proc = Process.Start ("ssh", ssh_login + " mkdir -p \"" + ssh_target_path + "\"");
+            if (proc.Start ()) {
+                proc.WaitForExit ();
+                if (proc.ExitCode == 0) {
+                    proc = Process.Start ("rsync", "-avz -e ssh . " + ssh_rsync_destination);
+                    if (proc.Start ()) {
+                        proc.WaitForExit ();
+                    }
+                }
+            }
         }
     }
 }
