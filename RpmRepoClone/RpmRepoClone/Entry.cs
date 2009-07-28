@@ -148,8 +148,9 @@ namespace RpmRepoClone
                     files_to_remove.AddRange (Directory.GetFiles (arch));
                 }
                 
-                for (int i = 0; i < packages.Count; i++) {
-                    var remote_package = packages[i];
+                var packages_to_update = new List<Package> ();
+                
+                foreach (var remote_package in packages) {
                     var file = new FileInfo (remote_package.RelativeLocation);
                     
                     files_to_remove.Remove (remote_package.RelativeLocation);
@@ -160,8 +161,7 @@ namespace RpmRepoClone
                         continue;
                     }
                     
-                    DownloadPackage (remote_package, i + 1, packages.Count);
-                    changes_made = true;
+                    packages_to_update.Add (remote_package);
                 }
                 
                 if (files_to_remove.Count > 0) {
@@ -171,6 +171,12 @@ namespace RpmRepoClone
                         File.Delete (file);
                         changes_made = true;
                     }
+                }
+                
+                for (int i = 0; i < packages_to_update.Count; i++) {
+                    var remote_package = packages_to_update[i];
+                    DownloadPackage (remote_package, i + 1, packages_to_update.Count);
+                    changes_made = true;
                 }
             }
             
