@@ -210,6 +210,8 @@ namespace RpmRepoClone
         private static void CreateRepodata ()
         {
             Console.WriteLine ("Creating repodata...");
+            Directory.Delete ("repodata", true);
+            Directory.Delete (".repodata", true);
             var proc = Process.Start ("createrepo", "-p .");
             proc.Start ();
             proc.WaitForExit ();
