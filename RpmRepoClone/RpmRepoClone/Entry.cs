@@ -104,7 +104,10 @@ namespace RpmRepoClone
             Console.WriteLine ();
             Console.WriteLine ("  Working directory: {0}", Environment.CurrentDirectory);
             Console.WriteLine ("  Create repodata:   {0}", create_repo ? "yes" : "no");
-            Console.WriteLine ("  SSH rsync to:      {0}", ssh_rsync_destination ?? "<skip>");
+            Console.WriteLine ("  SSH rsync to:      {0}", ssh_rsync_destination == null ? "<skip" : null);
+            if (ssh_rsync_destination != null) {
+                Console.WriteLine ("    {0}", ssh_rsync_destination);
+            }
             Console.WriteLine ();
         }
         
@@ -119,17 +122,18 @@ namespace RpmRepoClone
             foreach (var arch in architectures) {
                 Console.WriteLine ("Updating packages for {0}...", arch);
             
-                var query =
+                var packages = new List<Package> (
                     from remote in remote_packages
                     where remote.Arch == arch
-                    select remote;
+                    select remote);
                     
                 var files_to_remove = new List<string> ();
                 if (Directory.Exists (arch)) {
                     files_to_remove.AddRange (Directory.GetFiles (arch));
                 }
                 
-                foreach (var remote_package in query) {
+                for (int i = 0; i < packages.Count; i++) {
+                    var remote_package = packages[i];
                     var file = new FileInfo (remote_package.RelativeLocation);
                     
                     files_to_remove.Remove (remote_package.RelativeLocation);
@@ -140,7 +144,7 @@ namespace RpmRepoClone
                         continue;
                     }
                     
-                    DownloadPackage (remote_package);
+                    DownloadPackage (remote_package, i + 1, packages.Count);
                 }
                 
                 if (files_to_remove.Count > 0) {
@@ -153,7 +157,7 @@ namespace RpmRepoClone
             }
         }
         
-        private static void DownloadPackage (Package package)
+        private static void DownloadPackage (Package package, int index, int count)
         {
             var http_response = package.Download ();
             if (http_response == null) {
@@ -172,18 +176,21 @@ namespace RpmRepoClone
             
             xfer_stats.Updated += (o, e) => {
                 var progress_bar = String.Empty.PadLeft ((int)Math.Ceiling (
-                    xfer_stats.PercentComplete * 20), '=').PadRight (20);
+                    xfer_stats.PercentComplete * 16), '=').PadRight (16);
             
-                if (xfer_stats.Finished) {
-                    Console.WriteLine (String.Format ("\r{0} |{1}| OK", 
-                        display_name, progress_bar).PadRight (80));
-                } else {
-                    Console.Write ("\r{0} |{1}| {2} {3} KB/s {4} ETA ",
+                var status_message = xfer_stats.Finished
+                    ? String.Format ("\r{0} | OK |", display_name)
+                    : String.Format ("\r{0} |{1}| {2:0.0}%  {3:0.0} KB/s  {4}  ({5}/{6}) ", 
                         display_name,
                         progress_bar,
-                        String.Concat ((xfer_stats.PercentComplete * 100.0).ToString ("0.0"), "%").PadRight (6),
-                        (xfer_stats.TransferRate / (double)(1 << 10)).ToString ("0.0").PadLeft (6),
-                        TransferStatistics.FormatTime (xfer_stats.TimeRemaining).PadLeft (6));
+                        xfer_stats.PercentComplete * 100.0,
+                        xfer_stats.TransferRate / (double)(1 << 10),
+                        TransferStatistics.FormatTime (xfer_stats.TimeRemaining),
+                        index, count);
+
+                Console.Write (status_message.PadRight (80));
+                if (xfer_stats.Finished) {
+                    Console.WriteLine ();
                 }
             };
             
