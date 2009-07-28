@@ -31,16 +31,21 @@ namespace RpmRepoClone
                 Environment.Exit (1);
             }
             
+            bool changes_made = false;
             foreach (var repo in repositories) {
-                ProcessRepository (repo);
+                changes_made |= ProcessRepository (repo);
             }
             
-            if (create_repo) {
-                CreateRepodata ();
-            }
-
-            if (ssh_rsync_destination != null) {
-                Rsync ();
+            if (changes_made) {
+                if (create_repo) {
+                    CreateRepodata ();
+                }
+    
+                if (ssh_rsync_destination != null) {
+                    Rsync ();
+                }
+            } else {
+                Console.WriteLine ("Skipping createrepo and rsync (no changes made).");
             }
             
             Console.WriteLine ("Done.");
@@ -111,13 +116,15 @@ namespace RpmRepoClone
             Console.WriteLine ();
         }
         
-        private static void ProcessRepository (Uri repository)
+        private static bool ProcessRepository (Uri repository)
         {
             Console.WriteLine ("Loading repo [{0}]...", repository);
             var remote_packages = new RpmMetadataDocument () {
                 BasePackageUri = repository.AbsoluteUri
             };
             remote_packages.Load ();
+            
+            bool changes_made = false;
             
             foreach (var arch in architectures) {
                 Console.WriteLine ("Updating packages for {0}...", arch);
@@ -145,6 +152,7 @@ namespace RpmRepoClone
                     }
                     
                     DownloadPackage (remote_package, i + 1, packages.Count);
+                    changes_made = true;
                 }
                 
                 if (files_to_remove.Count > 0) {
@@ -152,9 +160,12 @@ namespace RpmRepoClone
                     foreach (var file in files_to_remove) {
                         Console.WriteLine ("  {0}", file);
                         File.Delete (file);
+                        changes_made = true;
                     }
                 }
             }
+            
+            return changes_made;
         }
         
         private static void DownloadPackage (Package package, int index, int count)
