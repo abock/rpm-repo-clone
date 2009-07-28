@@ -57,13 +57,15 @@ namespace RpmRepoClone
             
             var status_message = Finished
                 ? String.Format ("\r{0} | OK |", DisplayLabel)
-                : String.Format ("\r{0} |{1}| {2:0.0}%  {3:0.0} KB/s  {4}  ({5}/{6}) ", 
+                : String.Format ("\r{0} |{1}| {2:0.0}%  {3:0.0} KB/s  {4} {5}", 
                     DisplayLabel,
                     progress_bar,
                     PercentComplete * 100.0,
                     TransferRate / (double)(1 << 10),
                     TransferStatistics.FormatTime (TimeRemaining),
-                    Index, Count);
+                    Count > 0 
+                        ? String.Format ("({0}/{1})", Index, Count)
+                        : String.Empty);
         
             Console.Write (status_message.PadRight (80));
             if (Finished) {
