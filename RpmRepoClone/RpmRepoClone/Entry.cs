@@ -207,14 +207,34 @@ namespace RpmRepoClone
             }
         }
         
+        private static bool RunProcess (string command, string args)
+        {
+            var proc = new Process () { 
+                StartInfo = new ProcessStartInfo (command, args) {
+                    UseShellExecute = true
+                }
+            };
+            
+            proc.Start ();
+            proc.WaitForExit ();
+            
+            return proc.ExitCode == 0;
+        }
+        
         private static void CreateRepodata ()
         {
             Console.WriteLine ("Creating repodata...");
-            Directory.Delete ("repodata", true);
-            Directory.Delete (".repodata", true);
-            var proc = Process.Start ("createrepo", "-p .");
-            proc.Start ();
-            proc.WaitForExit ();
+            if (Directory.Exists ("repodata")) {
+                Directory.Delete ("repodata", true);
+            }
+            
+            if (Directory.Exists (".repodata")) {
+                Directory.Delete (".repodata", true);
+            }
+            
+            if (!RunProcess ("createrepo", "-p .")) {
+                Console.Error.WriteLine ("Failed to create repodata");
+            }
         }
 
         private static void Rsync ()
@@ -225,15 +245,12 @@ namespace RpmRepoClone
             var ssh_login = ssh_parts[0];
             var ssh_target_path = ssh_parts[1];
         
-            var proc = Process.Start ("ssh", ssh_login + " mkdir -p \"" + ssh_target_path + "\"");
-            if (proc.Start ()) {
-                proc.WaitForExit ();
-                if (proc.ExitCode == 0) {
-                    proc = Process.Start ("rsync", "-avz -e ssh . " + ssh_rsync_destination);
-                    if (proc.Start ()) {
-                        proc.WaitForExit ();
-                    }
+            if (RunProcess ("ssh", ssh_login + " mkdir -p \"" + ssh_target_path + "\"")) {
+                if (!RunProcess ("rsync", "-avz -e ssh . " + ssh_rsync_destination)) {
+                    Console.Error.WriteLine ("rsync failed to: " + ssh_rsync_destination);
                 }
+            } else {
+                Console.Error.WriteLine ("rsync failed: ssh " + ssh_login + " mkdir -p \"" + ssh_target_path + "\"");
             }
         }
     }
