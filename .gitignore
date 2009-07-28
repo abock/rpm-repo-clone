@@ -1,4 +1,5 @@
 bin/
-repos/
+repo/
 *.user*
 *.pidb
+sync-dmf
