@@ -127,7 +127,7 @@ namespace RpmRepoClone
         
         private static bool ProcessRepository (Uri repository)
         {
-            Console.WriteLine ("Loading repo [{0}]...", repository);
+            Console.WriteLine ("Loading {0}", repository);
             var remote_packages = new RpmMetadataDocument () {
                 BasePackageUri = repository.AbsoluteUri
             };
@@ -187,31 +187,11 @@ namespace RpmRepoClone
             Directory.CreateDirectory (Path.GetDirectoryName (package.RelativeLocation));
             File.Delete (package.RelativeLocation);
             
-            var xfer_stats = new TransferStatistics () {
+            var xfer_stats = new RepoTransferStatistics () {
+                Label = package.Name,
+                Index = index,
+                Count = count,
                 TotalSize = http_response.ContentLength
-            };
-            
-            var display_name = package.Name.Length > 20 ? package.Name.Substring (0, 20) : package.Name;
-            display_name = display_name.PadRight (20);
-            
-            xfer_stats.Updated += (o, e) => {
-                var progress_bar = String.Empty.PadLeft ((int)Math.Ceiling (
-                    xfer_stats.PercentComplete * 16), '=').PadRight (16);
-            
-                var status_message = xfer_stats.Finished
-                    ? String.Format ("\r{0} | OK |", display_name)
-                    : String.Format ("\r{0} |{1}| {2:0.0}%  {3:0.0} KB/s  {4}  ({5}/{6}) ", 
-                        display_name,
-                        progress_bar,
-                        xfer_stats.PercentComplete * 100.0,
-                        xfer_stats.TransferRate / (double)(1 << 10),
-                        TransferStatistics.FormatTime (xfer_stats.TimeRemaining),
-                        index, count);
-
-                Console.Write (status_message.PadRight (80));
-                if (xfer_stats.Finished) {
-                    Console.WriteLine ();
-                }
             };
             
             using (var http_stream = http_response.GetResponseStream ()) {

@@ -69,9 +69,17 @@ namespace RpmRepoClone
                 request.AllowAutoRedirect = true;
                 resource = Path.GetTempFileName ();
                 remove_resource = true;
+                
+                var response = (HttpWebResponse)request.GetResponse ();
+                var xfer_stats = new RepoTransferStatistics () {
+                    Label = "Fetching repo data",
+                    TotalSize = response.ContentLength
+                };
+                
                 using (var s = File.OpenWrite (resource)) {
-                    using (var stream = ((HttpWebResponse)request.GetResponse ()).GetResponseStream ()) {
-                        stream.TransferTo (s);
+                    using (var stream = response.GetResponseStream ()) {
+                        stream.TransferTo (s, (total_read, final_block, block, block_size) =>
+                            xfer_stats.CommitNewBlock (block, block_size, final_block));
                     }
                 }
             } 
