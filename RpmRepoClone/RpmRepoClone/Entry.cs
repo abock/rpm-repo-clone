@@ -164,6 +164,12 @@ namespace RpmRepoClone
                     packages_to_update.Add (remote_package);
                 }
                 
+                for (int i = 0; i < packages_to_update.Count; i++) {
+                    var remote_package = packages_to_update[i];
+                    DownloadPackage (remote_package, i + 1, packages_to_update.Count);
+                    changes_made = true;
+                }
+                
                 if (files_to_remove.Count > 0) {
                     Console.WriteLine ("Removing obsolete packages...");
                     foreach (var file in files_to_remove) {
@@ -171,12 +177,6 @@ namespace RpmRepoClone
                         File.Delete (file);
                         changes_made = true;
                     }
-                }
-                
-                for (int i = 0; i < packages_to_update.Count; i++) {
-                    var remote_package = packages_to_update[i];
-                    DownloadPackage (remote_package, i + 1, packages_to_update.Count);
-                    changes_made = true;
                 }
             }
             
