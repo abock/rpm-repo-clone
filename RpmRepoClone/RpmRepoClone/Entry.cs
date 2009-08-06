@@ -118,7 +118,7 @@ namespace RpmRepoClone
             Console.WriteLine ();
             Console.WriteLine ("  Working directory: {0}", Environment.CurrentDirectory);
             Console.WriteLine ("  Create repodata:   {0}", create_repo ? "yes" : "no");
-            Console.WriteLine ("  SSH rsync to:      {0}", ssh_rsync_destination == null ? "<skip" : null);
+            Console.WriteLine ("  SSH rsync to:      {0}", ssh_rsync_destination == null ? "<skip>" : null);
             if (ssh_rsync_destination != null) {
                 Console.WriteLine ("    {0}", ssh_rsync_destination);
             }
@@ -252,7 +252,7 @@ namespace RpmRepoClone
             var ssh_target_path = ssh_parts[1];
         
             if (RunProcess ("ssh", ssh_login + " mkdir -p \"" + ssh_target_path + "\"")) {
-                if (!RunProcess ("rsync", "-avz -e ssh . " + ssh_rsync_destination)) {
+                if (!RunProcess ("rsync", "-avz --delete-after -e ssh . " + ssh_rsync_destination)) {
                     Console.Error.WriteLine ("rsync failed to: " + ssh_rsync_destination);
                 }
             } else {
